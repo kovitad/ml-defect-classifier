@@ -1,0 +1,2 @@
+tracking_uri: "https://dta-mlflow.dta-test.kube.kasikornbank.com"
+experiment_name: "Defect Classification with MLflow"
