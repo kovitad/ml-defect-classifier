@@ -1,0 +1,7 @@
+paths:
+  raw_data_folder: "data/raw/robot"
+  processed_data_folder: "data/processed"
+parameters:
+  n_estimators: 150
+  max_depth: 25
+  test_size: 0.3
