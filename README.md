@@ -209,4 +209,4 @@ Jenkins CI/CD: Jenkins Pipeline for MLflow Deployment
 
 Model Training Project: Defect Classification Models Repository
 
-API Project for Consumption: [Defect Classification API Repository](https://kscm.kasikornbank.com
+
