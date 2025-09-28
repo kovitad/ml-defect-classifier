@@ -1,212 +1,104 @@
-# ml-defect-classifier
-Title: Machine Learning Model for Defect Classification - Knowledge Transfer Documentation
+ml-defect-classifier
 
-Overview This document provides a comprehensive overview of the Machine Learning implementation for classifying test execution failures into predefined defect categories, automating defect logging into Jira, and integrating the process with Jenkins and TestOps for seamless operation. This documentation serves as a knowledge transfer guide for the team to understand the workflow, processes, and the machine learning model used for defect classification.
+Machine Learning Model for Defect Classification – Proof of Concept
 
-1. Data Source
+📌 Overview
 
-Test Results: Extracted from 2,627 output.xml files across 12 application teams (KBIZ, PHUB, DA FUND, DA Custodian, WGW, WSA, etc.).
+This project is a proof of concept for applying machine learning to classify test execution failures into predefined defect categories.
+It demonstrates:
 
-Data Extraction: Failed test execution results were extracted and compiled into a CSV file, containing 47,710 records.
+Parsing and analyzing automated test reports (XML/JSON).
 
-2. Pattern Analysis and Defect Classification
+Training a machine learning model (Random Forest) to classify defects.
 
-Manual Classification: Collaborated with test automation engineers to identify and classify test failures.
+Exposing a lightweight API for integration into CI/CD pipelines.
 
-Defect Categories: Classify defects into the following categories:
+(Optional) Automating defect logging into an issue tracker such as Jira.
 
-Coding Error - Functional: Issues in core functionality, assigned to the relevant user story owner.
+The goal is to reduce manual triage, improve defect visibility, and catch issues earlier in the release pipeline.
 
-Coding Error - GUI: UI-related issues, linked to the respective user story.
+📂 Data Source
 
-Coding Error - Interface: Defects in interaction or API, linked to the respective user story.
+Test Results: Sampled from multiple application teams (unit, API, UI automated tests).
 
-Test Execution Error: Issues in test automation scripts, assigned to Tech Lead or TAE.
+Data Extraction: Failed test execution results parsed into CSV (~47k records in the POC).
 
-Infrastructure Error: Defects due to environment or network issues, assigned to Tech Lead.
+🧩 Defect Categories
 
-Test Data Error: Errors in test data mapping or transformation, linked to the respective user story.
+The model classifies failures into categories such as:
 
-Deployment Error: Defects from deployment issues, assigned to Tech Lead.
+Coding Error – Functional
 
-Non-Functional Error: Issues related to performance (e.g., response time, CPU usage), linked to the respective user story.
+Coding Error – GUI
 
-Special Categories: Some cases, such as "Unknown," "Not a Defect," and "Test Execution Error," are assigned to testers for further investigation.
+Coding Error – Interface/API
 
-3. Machine Learning Model Implementation
+Test Execution Error
 
-Model Training: We used a Random Forest Classifier for initial implementation, utilizing features such as test case name, error messages, and logs to classify defects.
+Infrastructure Error
 
-Integration with Jenkins: The ML model is integrated with Jenkins for real-time classification upon test execution failure. Failure logs are passed to the ML model for classification.
+Test Data Error
 
-Jira Defect Logging: Defects are automatically logged into Jira and assigned to the appropriate assignees using Jira REST API. A script automates defect logging based on classification results.
+Deployment Error
 
-4. Workflow Integration
+Non-Functional Error (e.g., performance, resource usage)
 
-Data Preparation: A scheduled process (1 AM every Monday) extracts and prepares data from Jenkins: Jenkins Pipeline Link.
+Unknown / Not a Defect (requires human investigation)
 
-Model Training & Re-Training: Feature files for training are stored on the DTA OCP server: /data/testops/feature_files/train_mode.
+🤖 Machine Learning Model
 
-API Integration: Automated defect classification and logging are managed through Jenkins pipelines and APIs for classification and Jira logging.
+Algorithm: Random Forest Classifier (initial POC).
 
-Classification API: API Endpoint Link
+Features: Test case names, error messages, log content.
 
-Jira Central API: Jira API Endpoint Link
+Pipeline: Log parsing → feature engineering → model training → classification.
 
-5. Project Timeline Summary
+Evaluation: Accuracy measured on historical labeled test logs.
 
-Project Initiation: Defined scope, kickoff completed by June 15, 2024.
+🔗 Workflow Integration
 
-Requirements Gathering: Requirements were gathered by June 28, 2024.
+Data Preparation: Convert XML/JSON reports into structured CSV datasets.
 
-ML Model Development: Completed POC and initial model, ongoing GitLab CI integration.
+Model Training: Train and validate the ML model on labeled data.
 
-API and TestOps Integration: API development in progress; integrated automation with TestOps.
+API Service: Wrap the model in a Flask API (Dockerized).
 
-Testing and Validation: Completed unit and integration testing; currently validating the end-to-end workflow.
+CI/CD Integration: Call the API from pipelines to classify test failures in real time.
 
-Go Live MVP 1.0: Scheduled for August 31, 2024, including Jenkins and CI implementation.
+Defect Logging (Optional): Use REST APIs (e.g., Jira) to automatically log classified defects.
 
-6. Benefits of API Integration for ML Models
+🚀 Tech Stack
 
-Accessibility: Allows remote access and integration across different platforms.
+Languages/Frameworks: Python, scikit-learn, Flask
 
-Scalability: Load balancing and efficient resource management ensure high availability.
+Containerization: Docker
 
-Security: Authentication mechanisms ensure data privacy and secure access.
+Pipelines: Jenkins/GitHub Actions (for CI/CD integration)
 
-7. Short-Term and Long-Term Plans
+Issue Tracking (optional): Jira REST API
 
-MVP 1.0 (Short-Term): Rule-based defect categorization using Random Forest Classifier, focus on addressing data leakage, reducing manual labeling effort with LLMs.
+📅 Roadmap
 
-Long-Term: Leveraging LLMs for flexible log analysis, improving classification accuracy, and establishing an MLOps pipeline for sustainability.
+MVP (Short Term):
 
-8. Action Items and Next Steps
+Rule-based + Random Forest classification
 
-Team Review: Review the existing rule-based patterns and validate against new defect cases.
+Automated defect logging with simple categories
 
-ML Model Improvements: Implement active learning and semi-supervised techniques to reduce manual labeling.
+Future Enhancements (Long Term):
 
-Deployment Preparation: Ensure readiness for MVP 1.0 go-live by completing integration and validation tasks.
+Use LLMs for flexible log analysis
 
-9. MLflow Deployment and Usage Guide for MLOps in OCP 4 (DTA Team)
+Improve accuracy with active learning & semi-supervised approaches
 
-Overview This knowledge base entry provides a step-by-step overview of our MLflow setup in the OpenShift (OCP 4) environment. It includes instructions for deploying MLflow via CI/CD pipelines, training and registering models, and consuming the models in downstream applications.
+Establish full MLOps pipeline (e.g., MLflow, model versioning, retraining)
 
-High-Level Architecture
+✅ Benefits
 
-MLflow Server: Hosted on OCP 4 at MLflow Server Link
+Automation: Reduces manual triage of test failures.
 
-KSCM GitLab for Model Training & Registration: GitLab Repository Link
+Consistency: Standardized defect classification across teams.
 
-Pipeline for Model Training: Jenkins Pipeline Link
+Speed: Faster defect feedback before UAT.
 
-Model Consumption: Models are served through APIs available at Defect Classification API Documentation
-
-1. MLflow Server Deployment
-
-Pipeline Configuration The MLflow server is deployed using the OCP 4 CI/CD pipeline via Jenkins. Here are the key components and configurations:
-
-Factory YAML File: The pipeline is managed using the factory configuration file: mlflow-server.factory-dev.yaml. Contact Peerapach Varalertsakul for more information.
-
-YAML Overview
-
-GitLab Repository: The pipeline pulls code from dtaguild/dta-tools/mlflow-server.
-
-Stages:
-
-pullCode: Pulls the latest code from the specified branch.
-
-unitTest: Skips unit tests for this configuration.
-
-buildImage: Uses Kaniko to build Docker images, with proxy settings for internal access.
-
-buildK8S: Deploys MLflow to OCP with custom overlays, and uses environment variables from Vault for secure deployment.
-
-OpenShift Site Configuration
-
-Cluster: ocp4-test
-
-Namespace: dta-sit
-
-Vault Integration: Secrets are managed securely through Vault.
-
-Jenkins Job for MLflow Server Deployment The Jenkins job executes the CI/CD pipeline, pulling the MLflow code, building the Docker image, and deploying to OCP.
-
-Result The MLflow server can be accessed at: MLflow Server Link. Here, users can monitor experiments, view model performance metrics, and manage registered models.
-
-2. Model Training and Registration
-
-The project for training models and registering them to MLflow is located at:
-
-Repository: New Defect Classification Models
-
-Training and Registration Process
-
-Setup MLflow Tracking: MLflow tracking is configured in the project to point to the MLflow server.
-
-Model Training: The repository contains code for training machine learning models (cypress_defect_classifier and robot_defect_classifier) used for defect classification.
-
-Training Data Paths:
-
-Cypress: /data/manual/cypress/cypress_test_data.csv (Data generated using generative AI due to insufficient real data).
-
-Robot: /data/manual/robot/robot_test_data.csv (Data generated from extraction, manual labeling, and classification using regular expressions).
-
-Labeling for Robot Data: In the legacy system, the robot training data was labeled using a combination of manual efforts and automated classification based on regular expression patterns. The labeling logic is implemented in the src/defect_classifier.py file, where various error patterns are matched to predefined defect categories stored in main/common_module/defect_categories.py.
-
-Model Registration: Once trained, models are registered in MLflow and saved to Artifactory.
-
-Registered Models:
-
-cypress_defect_classifier
-
-robot_defect_classifier
-
-Access Registered Models: Once the model training pipeline is complete, users can view the models at the MLflow Model Registry.
-
-3. Model Consumption
-
-The trained and registered models are consumed by an API project located at:
-
-Repository: Defect Classification API
-
-API Documentation: Swagger Documentation
-
-Usage
-
-Model Loading: The API uses the latest version of the models directly from MLflow.
-
-Endpoints: The API provides endpoints to classify defects using the loaded models.
-
-Prediction API: The API routes requests to the relevant ML models to predict defect classifications and returns results to clients.
-
-API Endpoints The main endpoints available for defect classification are:
-
-Cypress Defect Classification
-
-Robot Defect Classification
-
-These endpoints enable other applications to send test case data for classification, leveraging the latest registered ML models from MLflow.
-
-4. Source Code and Jenkins Pipeline Overview
-
-The following table summarizes the source code locations and Jenkins pipelines used for building and deploying each component of the defect classification system:
-
-Component	Source Code Repository Link	Branch	Jenkins Pipeline Link
-DTA Defect Classification API	Defect Classification API	main (prod), mlflow_feature (dev)	Jenkins Pipeline
-DTA MLflow Server	MLflow Server Code	main	Jenkins Pipeline for MLflow
-Legacy Defect Classification Model (Legacy Use)	Legacy Defect Classification Model	main	Jenkins Pipeline for Model Training
-DTA New Defect Classification Model	New Defect Classification Model	main	Jenkins Pipeline for New Model Training
-
-5. Key Points for Handover
-
-Key Links
-
-MLflow Server: MLflow Deployment
-
-Jenkins CI/CD: Jenkins Pipeline for MLflow Deployment
-
-Model Training Project: Defect Classification Models Repository
-
-
+Scalability: Easy to plug into existing pipelines.
